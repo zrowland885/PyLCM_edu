@@ -1,5 +1,6 @@
 import math
-import numpy as np
+#import numpy as np
+import jax.numpy as np
 from PyLCM.micro_particle import *
 from PyLCM.parcel import *
 from PyLCM.condensation import *

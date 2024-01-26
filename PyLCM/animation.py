@@ -3,7 +3,8 @@ from plotly.subplots import make_subplots
 import plotly.graph_objs as go
 import time
 from IPython.display import clear_output
-import numpy as np
+#import numpy as np
+import jax.numpy as np
 
 
 ####################################################################################################################################################################################

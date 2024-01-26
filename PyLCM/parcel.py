@@ -1,4 +1,5 @@
-import numpy as np
+#import numpy as np
+import jax.numpy as np
 from PyLCM.parameters import *
 from PyLCM.micro_particle import *
 from PyLCM.condensation import *

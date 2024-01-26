@@ -1,4 +1,5 @@
-import numpy as np
+#import numpy as np
+import jax.numpy as np
 from matplotlib import pyplot as plt
 import time
 import pylab as pl
@@ -16,6 +17,7 @@ def ts_analysis(particles_list,air_mass_parcel,log_edges, nbins, n_particles):
     nbins = nbins - 1 # Number of bins are 1 smaller than number of edges.
     
     spec = np.zeros(nbins)
+
     # Calculate the total mass of particles with r_liq larger than activation_radius_ts
     qc_mass = 0.0
     qr_mass = 0.0
@@ -56,7 +58,7 @@ def ts_analysis(particles_list,air_mass_parcel,log_edges, nbins, n_particles):
             particles_c.append(0)
             particles_ac.append(0)
             
-        spec = get_spec(nbins,spec,log_edges,r_liq,particle.A,air_mass_parcel)
+        spec = get_spec(nbins, spec, log_edges, r_liq, particle.A, air_mass_parcel)
         
         # Append the radius of the current particle to the list
         particles_r[particle.id] = r_liq
@@ -80,10 +82,15 @@ def ts_analysis(particles_list,air_mass_parcel,log_edges, nbins, n_particles):
     return(spec,qa, qc,qr, NA, NC, NR, particles_r, rc_liq_avg, rc_liq_std)
 
 def get_spec(nbins,spectra_arr,log_edges,r_liq,weight_factor,air_mass_parcel):
+    import jax.numpy as np
     # Computes array of the spectra
     bin_idx = np.searchsorted(log_edges, r_liq, side='right') - 1
     if 0 <= bin_idx < nbins:
-        spectra_arr[bin_idx] += weight_factor / air_mass_parcel / (rr_spec[bin_idx] - rl_spec[bin_idx])*rm_spec[bin_idx]
+
+        #spectra_arr[bin_idx] += weight_factor / air_mass_parcel / (rr_spec[bin_idx] - rl_spec[bin_idx])*rm_spec[bin_idx]
+        np.array(spectra_arr).at[bin_idx].set(
+            spectra_arr[bin_idx] + weight_factor / air_mass_parcel / (rr_spec[bin_idx] - rl_spec[bin_idx])*rm_spec[bin_idx]
+        )
 
     return spectra_arr
 

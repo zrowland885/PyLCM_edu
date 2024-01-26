@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
-import numpy as np
+#import numpy as np
+import jax.numpy as np
+import jax.debug as debug
 import matplotlib.colors
 import copy
 from IPython.display import clear_output
@@ -54,8 +56,11 @@ def print_output(t,dt, z_parcel, T_parcel, q_parcel, rh, qc, qr, na, nc, nr):
         "Time (s)", "z (m)", "T (K)", "qv (g/kg)", "RH (%)", "QC (g/kg)", "QR (g/kg)", "NA (/mg)", "NC (/mg)", "NR (/mg)"))
 
     # Print the updated output
-    print("after: {:<8.1f}  {:<8.2f} {:<8.2f} {:<9.2f} {:<8.3f}  {:<8.3f}  {:<8.3f}  {:<8.2f}  {:<8.2f}  {:<8.2f}".format(
-        (t+1) * dt, z_parcel, T_parcel, 1e3 * q_parcel, 100* rh, qc,  qr, na , nc , nr))
+    #print("after: {:<8.1f}  {:<8.2f} {:<8.2f} {:<9.2f} {:<8.3f}  {:<8.3f}  {:<8.3f}  {:<8.2f}  {:<8.2f}  {:<8.2f}".format(
+    #    (t+1)*dt, z_parcel, T_parcel, 1e3*q_parcel, 100*rh, qc, qr, na, nc, nr))
+    debug.print("{t}, {z}, {T}, {q}, {rh}, {qc}, {qr}, {na}, {nc}, {nr}",
+        t=(t+1)*dt, z=z_parcel, T=T_parcel, q=1e3*q_parcel, rh=100*rh, qc=qc, qr=qr, na=na, nc=nc, nr=nr
+        )
     
 def subplot_array_function(plot_mode, dt, nt, rm_spec, qa_ts, qc_ts, qr_ts, na_ts, nc_ts, nr_ts, T_parcel_array, RH_parcel_array, q_parcel_array, z_parcel_array, spectra_arr, increment_widget, con_ts, act_ts, evp_ts, dea_ts, acc_ts, aut_ts, rc_liq_avg_array,droplet_mode_widget):
     # Core function of the post processing "plot" section which provides 6 subplots to all main model variables

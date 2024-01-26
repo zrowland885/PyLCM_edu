@@ -1,4 +1,5 @@
-import numpy as np
+#import numpy as np
+import jax.numpy as np
 
 rho_a = 1.225E-3 #g/cm3
 rho_liq = 1000.0 # density of liquid water (kg/m3)
