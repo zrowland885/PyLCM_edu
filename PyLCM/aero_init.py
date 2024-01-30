@@ -88,7 +88,9 @@ def model_init(
     _, _, air_mass_parcel =  parcel_rho(P_parcel, T_parcel)
     
     # Aerosol initialization
-    T_parcel, q_parcel, particles_list = aero_init(mode_aero_init, n_particles, P_parcel,z_parcel, T_parcel,q_parcel, N_aero, mu_aero, sigma_aero, rho_aero, k_aero, switch_kappa_koehler)
+    T_parcel, q_parcel, particles_list = aero_init(
+        mode_aero_init, n_particles, P_parcel, z_parcel, T_parcel,q_parcel, N_aero, mu_aero, sigma_aero, rho_aero, k_aero, switch_kappa_koehler
+        )
     
     # Variant for mean radii and std. dev. of cloud+rain droplets only
     rc_liq_avg_array = np.zeros(nt+1)
@@ -101,11 +103,22 @@ def model_init(
     # Initalize spectrum output
     spectra_arr = np.zeros((nt+1,len(rm_spec)))
     # Initialization of arrays for time series output
-    qa_ts,qc_ts,qr_ts = np.zeros(nt+1),np.zeros(nt+1),np.zeros(nt+1)
-    na_ts,nc_ts,nr_ts = np.zeros(nt+1),np.zeros(nt+1),np.zeros(nt+1)
+    qa_ts, qc_ts, qr_ts = np.zeros(nt+1),np.zeros(nt+1),np.zeros(nt+1)
+    na_ts, nc_ts, nr_ts = np.zeros(nt+1),np.zeros(nt+1),np.zeros(nt+1)
     con_ts, act_ts, evp_ts, dea_ts = np.zeros(nt+1),np.zeros(nt+1),np.zeros(nt+1),np.zeros(nt+1)
     acc_ts, aut_ts, precip_ts = np.zeros(nt+1),np.zeros(nt+1), np.zeros(nt+1)
-    spectra_arr[0], qa_ts[0], qc_ts[0],qr_ts[0], na_ts[0], nc_ts[0], nr_ts[0], particles_array[0], rc_liq_avg_array[0], rc_liq_std_array[0] = ts_analysis(particles_list,air_mass_parcel,rm_spec, n_bins,n_particles)
+    #spectra_arr[0], qa_ts[0], qc_ts[0],qr_ts[0], na_ts[0], nc_ts[0], nr_ts[0], particles_array[0], rc_liq_avg_array[0], rc_liq_std_array[0] = ts_analysis(particles_list,air_mass_parcel,rm_spec, n_bins,n_particles)
+    ts_analysis_res = ts_analysis(particles_list,air_mass_parcel,rm_spec, n_bins,n_particles)
+    spectra_arr = spectra_arr.at[0].set(ts_analysis_res[0])
+    qa_ts = qa_ts.at[0].set(ts_analysis_res[1])
+    qc_ts = qc_ts.at[0].set(ts_analysis_res[2])
+    qr_ts = qr_ts.at[0].set(ts_analysis_res[3])
+    na_ts = na_ts.at[0].set(ts_analysis_res[4])
+    nc_ts = nc_ts.at[0].set(ts_analysis_res[5])
+    nr_ts = nr_ts.at[0].set(ts_analysis_res[6])
+    particles_array = particles_array.at[0].set(ts_analysis_res[7])
+    rc_liq_avg_array = rc_liq_avg_array.at[0].set(ts_analysis_res[8])
+    rc_liq_std_array = rc_liq_std_array.at[0].set(ts_analysis_res[9])
     
     # Initialization of arrays for T_parcel, RH_parcel, q_parcel and z_parcel. 
     # They will later be filled with values for each time step.
@@ -115,10 +128,14 @@ def model_init(
     z_parcel_array  = np.zeros(nt+1)
 
     # Inserting the initialization values at the 0th position of the arrays.
-    T_parcel_array[0]  = T_parcel
-    RH_parcel_array[0] = (q_parcel * P_parcel / (q_parcel + r_a / rv)) / esatw( T_parcel ) 
-    q_parcel_array[0]  = q_parcel
-    z_parcel_array[0]  = z_parcel
+    #T_parcel_array[0]  = T_parcel
+    #RH_parcel_array[0] = (q_parcel * P_parcel / (q_parcel + r_a / rv)) / esatw( T_parcel ) 
+    #q_parcel_array[0]  = q_parcel
+    #z_parcel_array[0]  = z_parcel
+    T_parcel_array = T_parcel_array.at[0].set(T_parcel)
+    RH_parcel_array = RH_parcel_array.at[0].set( (q_parcel * P_parcel / (q_parcel + r_a / rv)) / esatw( T_parcel ) )
+    q_parcel_array = q_parcel_array.at[0].set(q_parcel)
+    z_parcel_array = z_parcel_array.at[0].set(z_parcel)
     
     # Read in the ascending mode selected in the widget
     #ascending_mode=ascending_mode_widget.value
@@ -141,7 +158,20 @@ def model_init(
         particles_list, particles_array, rc_liq_avg_array, rc_liq_std_array
 
 
-def aero_init(mode_aero_init, n_ptcl, P_parcel, z_parcel,T_parcel,q_parcel, N_aero, mu_aero,sigma_aero,rho_aero, k_aero, switch_kappa_koehler):
+def aero_init(
+        mode_aero_init,
+        n_ptcl,
+        P_parcel,
+        z_parcel,
+        T_parcel,
+        q_parcel,
+        N_aero,
+        mu_aero,
+        sigma_aero,
+        rho_aero,
+        k_aero,
+        switch_kappa_koehler
+        ):
     
     # Aerosol initialization
     rho_parcel, V_parcel, air_mass_parcel =  parcel_rho(P_parcel, T_parcel)
@@ -153,7 +183,8 @@ def aero_init(mode_aero_init, n_ptcl, P_parcel, z_parcel,T_parcel,q_parcel, N_ae
     # Computation of supersaturation
     S_adia  = ( e_a - e_s ) / e_s
 
-    dql_liq = np.sum([p.M for p in particles_list])
+    #dql_liq = np.sum([p.M for p in particles_list])
+    dql_liq = np.sum(np.array([p.M for p in particles_list]))
 
     min_mass_aero = 1.0E-200 
     
@@ -174,7 +205,8 @@ def aero_init(mode_aero_init, n_ptcl, P_parcel, z_parcel,T_parcel,q_parcel, N_ae
     n_difference = int(np.round(np.sum(n_particles_mode_array) - np.sum(n_particles_mode_int)))
 
     # Adjust the first mode to account for truncation
-    n_particles_mode_int[0] += n_difference
+    #n_particles_mode_int[0] += n_difference
+    n_particles_mode_int = n_particles_mode_int.at[0].add(n_difference)
 
     ## New initialization for the hygroscopicity parameter
     # Compute the indices for the modes
@@ -185,7 +217,8 @@ def aero_init(mode_aero_init, n_ptcl, P_parcel, z_parcel,T_parcel,q_parcel, N_ae
         # Generate log-normal distribution for the modes
         temp_arr = []
         for k in range(mode_count):
-            temp_arr.extend(np.random.lognormal(mu_aero[k], sigma_aero[k], n_particles_mode_int[k]))
+            import numpy as tnp
+            temp_arr.extend(tnp.random.lognormal(mu_aero[k], sigma_aero[k], n_particles_mode_int[k]))
 
         aero_r_seed = np.array(temp_arr)
 
@@ -249,7 +282,8 @@ def aero_init(mode_aero_init, n_ptcl, P_parcel, z_parcel,T_parcel,q_parcel, N_ae
             #Put initialized particle in a particles_list 
             particles_list.append(particle)
 
-    dql_liq = (np.sum([p.M for p in particles_list]) - dql_liq)/air_mass_parcel
+    #dql_liq = (np.sum([p.M for p in particles_list]) - dql_liq)/air_mass_parcel
+    dql_liq = (np.sum(np.array([p.M for p in particles_list])) - dql_liq)/air_mass_parcel
     T_parcel = T_parcel + dql_liq * l_v / cp
     q_parcel = q_parcel - dql_liq
     

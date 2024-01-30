@@ -1,5 +1,4 @@
 #import numpy as np
-import jax.numpy as np
 from matplotlib import pyplot as plt
 import time
 import pylab as pl
@@ -11,6 +10,9 @@ from PyLCM.aero_init import *
 from PyLCM.parcel import *
 from PyLCM.condensation import *
 from PyLCM.collision import *
+
+import jax.numpy as np
+import jax.debug as jaxdebug
  
 def ts_analysis(particles_list,air_mass_parcel,log_edges, nbins, n_particles):
     # Timesteps analysis: Performs calculations of q_x mixing ratios and n_x number densities and the spectra
@@ -61,13 +63,19 @@ def ts_analysis(particles_list,air_mass_parcel,log_edges, nbins, n_particles):
         spec = get_spec(nbins, spec, log_edges, r_liq, particle.A, air_mass_parcel)
         
         # Append the radius of the current particle to the list
-        particles_r[particle.id] = r_liq
+        #particles_r[particle.id] = r_liq
+        particles_r = particles_r.at[particle.id].set(r_liq)
+
         # Apped the weighting factor of the current particle to the list
-        particles_a[particle.id] = particle.A
+        #particles_a[particle.id] = particle.A
+        particles_a = particles_a.at[particle.id].set(particle.A)
+
         
     # Weighted mean and standard deviation of radius for cloud droplets only
     rc_liq_avg = np.nansum(np.array(particles_c) * np.array(particles_ac)) / np.sum(np.array(particles_ac))
-    rc_liq_std = np.sqrt( np.nansum(np.array(particles_ac) * (np.array(particles_c - rc_liq_avg))**2) / (np.sum(np.array(particles_ac))) )
+
+    #rc_liq_std = np.sqrt( np.nansum(np.array(particles_ac) * (np.array(particles_c - rc_liq_avg))**2) / (np.sum(np.array(particles_ac))) )
+    rc_liq_std = np.sqrt( np.nansum(np.array(particles_ac) * (np.array(np.array(particles_c) - rc_liq_avg))**2) / (np.sum(np.array(particles_ac))) )
 
     # Unit conversion of mixing ratios
     qc = qc_mass / air_mass_parcel *1e3

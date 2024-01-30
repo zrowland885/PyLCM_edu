@@ -1,5 +1,6 @@
 #import numpy as np
 import jax.numpy as np
+import jax.debug as jaxdebug
 import sys
 from numba import jit
 from PyLCM.parameters import *
@@ -35,6 +36,9 @@ def drop_condensation(particles_list, T_parcel, q_parcel, P_parcel, nt, dt, air_
     radiation = 0.0
         
     for particle in particles_list:
+
+        jaxdebug.print("one")
+
         dq_liq = dq_liq - particle.M
         
         # Computation of factors a and b related to Koehler curve
@@ -45,6 +49,8 @@ def drop_condensation(particles_list, T_parcel, q_parcel, P_parcel, nt, dt, air_
         else:
             bfactor = vanthoff_aero * rho_aero * molecular_weight_water / (rho_liq * molecular_weight_aero) # Solute effect
         
+        jaxdebug.print("two")
+
         # Initial radius
         r_liq = (particle.M / (particle.A * 4.0 / 3.0 * np.pi * rho_liq)) ** 0.33333333333 # Droplet radius
         r_N = (particle.Ns / (particle.A * 4.0 / 3.0 * np.pi * rho_aero)) ** 0.33333333333 # Aerosol radius
@@ -56,8 +62,10 @@ def drop_condensation(particles_list, T_parcel, q_parcel, P_parcel, nt, dt, air_
             activation_radius = activation_radius_ts
         # Diffusional growth
         r_liq_old = r_liq
+        jaxdebug.print("three")
         r_liq = radius_liquid_euler(r_liq, dt, r0, G_pre, supersat, f_vent, afactor, bfactor, r_N, D_pre, radiation)
-            
+        jaxdebug.print("four")
+
         particle.M = particle.A * 4.0 / 3.0 * np.pi * rho_liq * r_liq ** 3
         
         if r_liq_old < r_liq:
@@ -112,7 +120,7 @@ def radius_liquid_euler(r_ini, dt_int, r0, G_pre, supersat, ventilation_effect, 
     t_eul = 0.0
     while t_eul < dt_int - 1.0e-20:
 
-        for m in range(500):
+        for m in range(50): # 500
 
             dr2dt = 2.0 * G_pre * ventilation_effect * (supersat - afactor / r_eul + bfactor * r_aero**3 / r_eul**3 - D_pre * radiation * r_eul) * r_eul / (r_eul + r0)
 
@@ -124,7 +132,7 @@ def radius_liquid_euler(r_ini, dt_int, r0, G_pre, supersat, ventilation_effect, 
             f = r_eul**2 - r_ini**2 - dt_eul * dr2dt
             dfdr2 = 1.0 - dt_eul * d2r2dtdr2
 
-            r_eul = (max(r_eul**2 - f / dfdr2, r_aero**2))**0.5  # Newton-Raphson scheme (2nd order)
+            r_eul = (max(r_eul**2 - f / dfdr2, r_aero**2))**0.5 # Newton-Raphson scheme (2nd order)
 
             rel_change = abs(r_eul - r_eul_old) / r_eul_old
             r_eul_old = r_eul

@@ -3,6 +3,7 @@
 
 #import numpy as np
 import jax.numpy as np
+import jax.debug as jaxdebug
 import time
 import pylab as pl
 
@@ -21,7 +22,7 @@ from Post_process.print_plot import *
 def timesteps_function(
         dt, nt, n_particles, max_z, do_condensation, do_collision, switch_sedi_removal,
         T_parcel, P_parcel, RH_parcel, w_parcel, z_parcel, q_parcel,
-        ascending_mode, time_half_wave_parcel,
+        ascending_mode, time_half_wave_parcel, S_lst,
         switch_entrainment, entrainment_start, entrainment_end, entrainment_rate,
         kohler_activation_radius, switch_kappa_koehler,
         display_mode,
@@ -66,43 +67,59 @@ def timesteps_function(
         z_parcel, T_parcel, P_parcel = ascend_parcel(z_parcel, T_parcel, P_parcel, w_parcel, dt, time, max_z, theta_profiles, time_half_wave_parcel, ascending_mode)
         
 
-        # ----- IGNORE -----
-        #if switch_entrainment and (entrainment_start <= time) and (time < entrainment_end) and (z_parcel < 3000.):
+        if switch_entrainment and (entrainment_start <= time) and (time < entrainment_end) and (z_parcel < 3000.):
             #Entrainment works only when z < 3000m
-        #    T_parcel, q_parcel = basic_entrainment(dt,z_parcel, T_parcel, q_parcel,P_parcel, entrainment_rate, qv_profiles, theta_profiles)
-        # ----- IGNORE -----
-
+            T_parcel, q_parcel = basic_entrainment(dt, z_parcel, T_parcel, q_parcel,P_parcel, entrainment_rate, qv_profiles, theta_profiles)
 
         rho_parcel, V_parcel, air_mass_parcel =  parcel_rho(P_parcel, T_parcel)
         
 
-
-        # ----- IGNORE -----
         # Condensational Growth
-        # dq_liq = 0.0
-        #if do_condensation:
-        #    particles_list, T_parcel, q_parcel, S_lst, con_ts[t+1], act_ts[t+1], evp_ts[t+1], dea_ts[t+1] = drop_condensation(particles_list, T_parcel, q_parcel, P_parcel, nt, dt, air_mass_parcel, S_lst, rho_aero,kohler_activation_radius, con_ts[t+1], act_ts[t+1], evp_ts[t+1], dea_ts[t+1], switch_kappa_koehler)
-        #    
+        dq_liq = 0.0
+        if do_condensation:
+            #particles_list, T_parcel, q_parcel, S_lst, con_ts[t+1], act_ts[t+1], evp_ts[t+1], dea_ts[t+1] = drop_condensation(particles_list, T_parcel, q_parcel, P_parcel, nt, dt, air_mass_parcel, S_lst, rho_aero,kohler_activation_radius, con_ts[t+1], act_ts[t+1], evp_ts[t+1], dea_ts[t+1], switch_kappa_koehler)
+
+            drop_condensation_res = drop_condensation(particles_list, T_parcel, q_parcel, P_parcel, nt, dt, air_mass_parcel, S_lst, rho_aero,kohler_activation_radius, con_ts[t+1], act_ts[t+1], evp_ts[t+1], dea_ts[t+1], switch_kappa_koehler)
+            particles_list = drop_condensation_res[0]
+            T_parcel = drop_condensation_res[1]
+            q_parcel = drop_condensation_res[2]
+            S_lst = drop_condensation_res[3]
+            con_ts = con_ts.at[t+1].set(drop_condensation_res[4])
+            act_ts = act_ts.at[t+1].set(drop_condensation_res[5])
+            evp_ts = evp_ts.at[t+1].set(drop_condensation_res[6])
+            dea_ts = dea_ts.at[t+1].set(drop_condensation_res[7])
+            
+            #jaxdebug.print(
+            #    "{con_ts}, {act_ts}, {evp_ts}, {dea_ts}",
+            #    con_ts=con_ts, act_ts=act_ts, evp_ts=evp_ts, dea_ts=dea_ts
+            #    )
+
             # Convert mass output to per mass per sec.
-        #    con_ts[t+1]  = 1e3 * con_ts[t+1] / air_mass_parcel / dt
-        #    act_ts[t+1]  = 1e3 * act_ts[t+1] / air_mass_parcel / dt
-        #    evp_ts[t+1]  = 1e3 * evp_ts[t+1] / air_mass_parcel / dt
-        #    dea_ts[t+1]  = 1e3 * dea_ts[t+1] / air_mass_parcel / dt
-        # ----- IGNORE -----
+            #con_ts[t+1]  = 1e3 * con_ts[t+1] / air_mass_parcel / dt
+            #act_ts[t+1]  = 1e3 * act_ts[t+1] / air_mass_parcel / dt
+            #evp_ts[t+1]  = 1e3 * evp_ts[t+1] / air_mass_parcel / dt
+            #dea_ts[t+1]  = 1e3 * dea_ts[t+1] / air_mass_parcel / dt
+            con_ts = con_ts.at[t+1].set( 1e3 * con_ts[t+1] / air_mass_parcel / dt )
+            act_ts = act_ts.at[t+1].set( 1e3 * act_ts[t+1] / air_mass_parcel / dt )
+            evp_ts = evp_ts.at[t+1].set( 1e3 * evp_ts[t+1] / air_mass_parcel / dt )
+            dea_ts = dea_ts.at[t+1].set( 1e3 * dea_ts[t+1] / air_mass_parcel / dt )
             
-        
-        # ----- IGNORE -----
+
         # Collisional Growth
-        #if do_collision:
-        #    particles_list, acc_ts[t+1], aut_ts[t+1], precip_ts[t+1] = collection(dt, particles_list,rho_parcel, rho_liq, P_parcel, T_parcel, acc_ts[t+1], aut_ts[t+1],precip_ts[t+1], switch_sedi_removal, z_parcel, max_z, w_parcel)
-            
+        if do_collision:
+            #particles_list, acc_ts[t+1], aut_ts[t+1], precip_ts[t+1] = collection(dt, particles_list,rho_parcel, rho_liq, P_parcel, T_parcel, acc_ts[t+1], aut_ts[t+1],precip_ts[t+1], switch_sedi_removal, z_parcel, max_z, w_parcel)
+            collection_res = collection(dt, particles_list, rho_parcel, rho_liq, P_parcel, T_parcel, acc_ts[t+1], aut_ts[t+1], precip_ts[t+1], switch_sedi_removal, z_parcel, max_z, w_parcel)
+            particles_list = collection_res[0]
+            acc_ts = acc_ts.at[t+1].set(collection_res[1])
+            aut_ts = aut_ts.at[t+1].set(collection_res[2])
+            precip_ts = precip_ts.at[t+1].set(collection_res[3])
+
             # Convert mass output to per mass per sec.
             # acc_ts[t+1]  = 1e3 * acc_ts[t+1] / air_mass_parcel / dt
             # aut_ts[t+1]  = 1e3 * aut_ts[t+1] / air_mass_parcel / dt
-        #    acc_ts.at[t+1].set(1e3 * acc_ts[t+1] / air_mass_parcel / dt)
-        #    aut_ts.at[t+1].set(1e3 * aut_ts[t+1] / air_mass_parcel / dt)
-        # ----- IGNORE -----
-        
+            acc_ts = acc_ts.at[t+1].set(1e3 * acc_ts[t+1] / air_mass_parcel / dt)
+            aut_ts = aut_ts.at[t+1].set(1e3 * aut_ts[t+1] / air_mass_parcel / dt)
+
         
         # Analysis
 
@@ -149,29 +166,29 @@ def timesteps_function(
         #        animation_call(figure_item, time_array, t, dt, nt,rm_spec, qa_ts, qc_ts, qr_ts, na_ts, nc_ts, nr_ts, T_parcel_array, RH_parcel_array, q_parcel_array, z_parcel_array)
     
     if grad_mode:
-        # return \
-        #     nt, \
-        #     dt, \
-        #     time_array[-1], \
-            return T_parcel_array[-1], \
-            # RH_parcel_array#, \
-            # q_parcel_array[-1], \
-            # z_parcel_array[-1], \
-            # qa_ts[-1], \
-            # qc_ts[-1], \
-            # qr_ts[-1], \
-            # na_ts[-1], \
-            # nc_ts[-1], \
-            # nr_ts[-1], \
-            # con_ts[-1], \
-            # act_ts[-1], \
-            # evp_ts[-1], \
-            # dea_ts[-1], \
-            # acc_ts[-1], \
-            # aut_ts[-1], \
-            # precip_ts[-1], \
-            # rc_liq_avg_array[-1], \
-            # rc_liq_std_array[-1]
+        
+        return \
+            nt, \
+            dt, \
+            time_array[-1], \
+            RH_parcel_array[-1], \
+            q_parcel_array[-1], \
+            z_parcel_array[-1], \
+            qa_ts[-1], \
+            qc_ts[-1], \
+            qr_ts[-1], \
+            na_ts[-1], \
+            nc_ts[-1], \
+            nr_ts[-1], \
+            con_ts[-1], \
+            act_ts[-1], \
+            evp_ts[-1], \
+            dea_ts[-1], \
+            acc_ts[-1], \
+            aut_ts[-1], \
+            precip_ts[-1], \
+            rc_liq_avg_array[-1], \
+            rc_liq_std_array[-1]
     else:
         return \
             nt, \

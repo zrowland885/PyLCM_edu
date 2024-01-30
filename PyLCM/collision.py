@@ -1,11 +1,14 @@
 import math
 #import numpy as np
-import jax.numpy as np
 from PyLCM.micro_particle import *
 from PyLCM.parcel import *
 from PyLCM.condensation import *
 from tqdm import tqdm
 import itertools
+
+import jax.numpy as np
+import jax.debug as jaxdebug
+import numpy as tnp
  
 def collection(dt, particles_list, rho_parcel, rho_liq, p_env, T_parcel, acc_ts, aut_ts, precip_ts, sedi_removal, z_parcel, max_z, w_parcel):
 
@@ -166,8 +169,8 @@ def same_weights_update(ptcl_int1, ptcl_int2, acc_ts, aut_ts):
 
     return(ptcl_int1, ptcl_int2, acc_ts, aut_ts)
 
-import math
-import numpy as np
+#import math
+#import numpy as np
 def determine_collision(dt, particle1, particle2, rho_parcel, rho_liq, p_env, T_parcel, half_length,nptcl):
     # Constants
     pi = math.pi
@@ -201,7 +204,7 @@ def determine_collision(dt, particle1, particle2, rho_parcel, rho_liq, p_env, T_
     p_crit = max(particle1.A, particle2.A) * K / V_parcel * dt
     p_crit = p_crit*nptcl*(nptcl-1)/(half_length*2)
     
-    x_rand = np.random.random()
+    x_rand = tnp.random.random()
     
     if p_crit > x_rand:
         check_final = True
@@ -293,16 +296,19 @@ def E_S09(r_m, r_n, v_r, rho_liq,t_parcel):
     d_S = 2.0 * min(r_m, r_n)
 
     # Compute collision kinetic energy
-    CKE = (math.pi / 12.0) * rho_liq * d_L**3 * d_S**3 / (d_L**3 + d_S**3) * v_r**2
+    #CKE = (math.pi / 12.0) * rho_liq * d_L**3 * d_S**3 / (d_L**3 + d_S**3) * v_r**2
+    CKE = (np.pi / 12.0) * rho_liq * d_L**3 * d_S**3 / (d_L**3 + d_S**3) * v_r**2
 
     # Compute surface energy
-    S_c = math.pi * sigma_air_liq(t_parcel) * (d_L**3 + d_S**3)**(2/3)
+    #S_c = math.pi * sigma_air_liq(t_parcel) * (d_L**3 + d_S**3)**(2/3)
+    S_c = np.pi * sigma_air_liq(t_parcel) * (d_L**3 + d_S**3)**(2/3)
 
     # Compute Weber number
     We = CKE / S_c
 
     # Compute coalescence efficiency
-    e_s09 = math.exp(-1.15 * We)
+    #e_s09 = math.exp(-1.15 * We)
+    e_s09 = np.exp(-1.15 * We)
 
     return e_s09
 
@@ -324,7 +330,9 @@ def ws_drops_beard(radius, rho_parcel, rho_liq, p_env, T_parcel):
     diameter = max(2.0 * radius, 0.1e-6) # set minimum value to prevent dividing by zero
 
     eta = rho_parcel * eta0 / rho0
-    l = l0 * (eta / eta0) * (p0 / p_env) * math.sqrt(T_parcel / T0)
+
+   #l = l0 * (eta / eta0) * (p0 / p_env) * math.sqrt(T_parcel / T0)
+    l = l0 * (eta / eta0) * (p0 / p_env) * np.sqrt(T_parcel / T0)
     Cac = 1.0 + 2.5 * l / diameter
 
     if diameter <= 19.0e-6:
@@ -333,9 +341,11 @@ def ws_drops_beard(radius, rho_parcel, rho_liq, p_env, T_parcel):
     elif diameter <= 1070.0e-6:
         C2 = 4.0 * rho_parcel * (rho_liq - rho_parcel) * g / (3.0 * eta**2)
         NDa = C2 * diameter**3
-        XX = math.log(NDa)
+        #XX = math.log(NDa)
+        XX = np.log(NDa)
         YY = sum(b[i] * XX**i for i in range(len(b)))
-        NRe = Cac * math.exp(YY)
+        #NRe = Cac * math.exp(YY)
+        NRe = Cac * np.exp(YY)
         ws_drops_beard = eta * NRe / (rho_parcel * diameter)
     else:
         C3 = 4.0 * (rho_liq - rho_parcel) * g / (3.0 * sigma_air_liq(T_parcel))
