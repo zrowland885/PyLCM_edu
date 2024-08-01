@@ -23,7 +23,7 @@ def timesteps_function(n_particles_widget, P_widget, RH_widget, T_widget, w_widg
     # Function call of the complete model initialization (model_init) (aerosol initialization included)
     P_parcel, T_parcel, q_parcel, z_parcel, w_parcel, N_aero, mu_aero, sigma_aero, nt, dt, \
     max_z, do_condensation, do_collision, ascending_mode, time_half_wave_parcel, S_lst, display_mode, \
-    qa_ts, qc_ts, qr_ts, na_ts, nc_ts, nr_ts, T_parcel_array, RH_parcel_array, q_parcel_array, \
+    qa_ts, qc_ts, qr_ts, na_ts, nc_ts, nr_ts, T_parcel_array, P_parcel_array, RH_parcel_array, q_parcel_array, \
     z_parcel_array, particles_list, spectra_arr, con_ts, act_ts, evp_ts, dea_ts, acc_ts, aut_ts, precip_ts, particles_array, rc_liq_avg_array, rc_liq_std_array,n_particles, TAU_ts_array = model_init(dt_widget, nt_widget, Condensation_widget, Collision_widget, \
                                 n_particles_widget, T_widget, P_widget, RH_widget, w_widget, z_widget, \
                                 max_z_widget, mode_aero_init_widget, gridwidget, \
@@ -77,6 +77,8 @@ def timesteps_function(n_particles_widget, P_widget, RH_widget, T_widget, w_widg
         RH_parcel_array[t+1] = RH_parcel
         q_parcel_array[t+1]  = q_parcel
         z_parcel_array[t+1]  = z_parcel
+
+        P_parcel_array[t+1] = P_parcel
                 
         time_array = np.arange(nt+1)*dt
 
@@ -96,5 +98,5 @@ def timesteps_function(n_particles_widget, P_widget, RH_widget, T_widget, w_widg
     gamma = 13.3
     albedo_array = TAU_ts_array / ( gamma + TAU_ts_array )
 
-    return nt, dt, time_array, T_parcel_array, RH_parcel_array, q_parcel_array, z_parcel_array, qa_ts,qc_ts,qr_ts, na_ts,nc_ts,nr_ts, spectra_arr, con_ts, act_ts, evp_ts, dea_ts, acc_ts, aut_ts, precip_ts,particles_array, rc_liq_avg_array, rc_liq_std_array, TAU_ts_array, albedo_array
+    return nt, dt, time_array, T_parcel_array, P_parcel_array, RH_parcel_array, q_parcel_array, z_parcel_array, qa_ts,qc_ts,qr_ts, na_ts,nc_ts,nr_ts, spectra_arr, con_ts, act_ts, evp_ts, dea_ts, acc_ts, aut_ts, precip_ts,particles_array, rc_liq_avg_array, rc_liq_std_array, TAU_ts_array, albedo_array
     

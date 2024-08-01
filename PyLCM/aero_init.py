@@ -99,11 +99,15 @@ def model_init(dt_widget, nt_widget, Condensation_widget, Collision_widget, n_pa
     q_parcel_array  = np.zeros(nt+1)
     z_parcel_array  = np.zeros(nt+1)
 
+    P_parcel_array = np.zeros(nt+1)
+
     # Inserting the initialization values at the 0th position of the arrays.
     T_parcel_array[0]  = T_parcel
     RH_parcel_array[0] = (q_parcel * P_parcel / (q_parcel + r_a / rv)) / esatw( T_parcel ) 
     q_parcel_array[0]  = q_parcel
     z_parcel_array[0]  = z_parcel
+
+    P_parcel_array[0] = P_parcel
     
     # Read in the ascending mode selected in the widget
     ascending_mode=ascending_mode_widget.value
@@ -115,7 +119,7 @@ def model_init(dt_widget, nt_widget, Condensation_widget, Collision_widget, n_pa
     # Read in selected display mode (options are: 'text_fast' or 'graphics')
     display_mode = mode_displaytype_widget.value
     
-    return P_parcel, T_parcel, q_parcel, z_parcel, w_parcel, N_aero, mu_aero, sigma_aero, nt, dt, max_z, do_condensation, do_collision, ascending_mode, time_half_wave_parcel, S_lst, display_mode, qa_ts, qc_ts, qr_ts, na_ts, nc_ts, nr_ts, T_parcel_array, RH_parcel_array, q_parcel_array, z_parcel_array, particles_list, spectra_arr, con_ts, act_ts, evp_ts, dea_ts, acc_ts, aut_ts, precip_ts, particles_array, rc_liq_avg_array, rc_liq_std_array,n_particles, TAU_ts_array
+    return P_parcel, T_parcel, q_parcel, z_parcel, w_parcel, N_aero, mu_aero, sigma_aero, nt, dt, max_z, do_condensation, do_collision, ascending_mode, time_half_wave_parcel, S_lst, display_mode, qa_ts, qc_ts, qr_ts, na_ts, nc_ts, nr_ts, T_parcel_array, P_parcel_array, RH_parcel_array, q_parcel_array, z_parcel_array, particles_list, spectra_arr, con_ts, act_ts, evp_ts, dea_ts, acc_ts, aut_ts, precip_ts, particles_array, rc_liq_avg_array, rc_liq_std_array,n_particles, TAU_ts_array
 
 def aero_init(mode_aero_init, n_ptcl, P_parcel, z_parcel,T_parcel,q_parcel, N_aero, mu_aero,sigma_aero,rho_aero, k_aero, switch_kappa_koehler):
     
