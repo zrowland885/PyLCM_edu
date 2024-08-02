@@ -1,0 +1,105 @@
+&INPUT
+    file_ending = "validation",  ! file name
+    dt = 1,                    ! analysis timestep (s)                                                                                                                                                                                [PG 3251: "For all processes, a model time step of 0.1 s is used in the parcel simulations."]
+    dt_physics_max = 0.1,        ! maximum physics timestep (s)                                                                                                                                                                         [PG 3251: "For all processes, a model time step of 0.1 s is used in the parcel simulations."]
+    time_end = 4500.0,           ! end time of simulation (s)                                                                                                                                                                           [PG 3251: "the parcel model is executed for 4500 s"]
+!
+!-- thermodynamics of parcel
+    init_parcel = 'USERDEFINED', ! case name to choose parcel thermodynamics ('BOMEX', 'MPACE', 'SHEBA', 'RICO', 'DYCOMS-RF01', 'DYCOMS-RF02', 'USERDEFINED')                                                                           [PG 3251: "The parcel model and the LES are initialized using the intercomparison case derived from the second re- search flight of the DYCOMS II measurement campaign (Ackerman et al. 2009)"]
+    z_init = 0.0,         ! height (m) at which parcel is initiated                                                                                                                                                                     [UNSPECIFIED]
+
+    T_box      = 289.27,       ! start absolute temperature (K) (relevant if init_parcel = 'USERDEFINED')                                                                                                                               [NOT NEEDED]
+    rh_box     = 0.83,          ! start relative humidity (dimensionless) (relevant if init_parcel = 'USERDEFINED')                                                                                                                      [NOT NEEDED]
+    p_box      = 101181,     ! start hydrostatic pressure (Pa) (relevant if init_parcel = 'USERDEFINED')                                                                                                                              [NOT NEEDED]
+
+    heating_rate_radiation = 0.0, ! heating rate of parcel (K/s)                                                                                                                                                                        [UNSPECIFIED]
+!
+!-- parameters for steering microphysics
+    switch_diffusion_micro    = .TRUE.,   ! turn on/off diffusional growth                                                                                                                                                              [PG 3251: "the effects of curvature and solute aerosol mass within the diffusional growth equation"]
+    switch_koehler_micro      = .TRUE.,   ! turn on/off curvature and solubility term in diffusional growth equation                                                                                                                    [PG 3251: "the effects of curvature and solute aerosol mass within the diffusional growth equation"]
+    switch_radiation_micro    = .FALSE.,  ! turn on/off radiation effects on diffusional growth equation, requires heating_rate_parcel /= 0.0                                                                                           [UNSPECIFIED]
+    switch_collection_micro   = .TRUE.,  ! turn on/off collisional growth                                                                                                                                                               [PG 3251: "Collisional growth is based on a statistical method that ap- proaches the exact method by Gillespie (1975)"]
+    switch_coll_breakup_micro = .FALSE.,  ! turn on/off collisional breakup                                                                                                                                                             [UNSPECIFIED]
+    switch_ice_micro          = .FALSE.,  ! turn on/off ice microphysics                                                                                                                                                                [UNSPECIFIED]
+    switch_FFC_micro          = .FALSE.,   ! turn on/off effect of film forming compounds on diffusional growth                                                                                                                          [UNSPECIFIED]
+
+    switch_direct_micro       = .FALSE.,  ! turn on/off weighting factors of 1, i.e., every simulation particle represents one real particle;                                                                                           [PG 3251: "the number of hydrometeors represented by each computational particle, called the weighting factor"]
+                                          ! n_aero becomes useless for switch_direct_micro = .TRUE.
+
+    switch_sed_removal_micro  = .TRUE.,  ! remove sedimenting particles using a random generator                                                                                                                                        [PG 3251: "Since there is no representation of sedimentation, these droplets will not leave the parcel, and collisional growth could be significantly overestimated. To mitigate this problem, droplets with a substantial (virtual) sedimentation velocity are randomly removed from the parcel"]
+    switch_ventilation_micro  = .TRUE.,  ! turn on/off ventilation effects on diffusional growth
+
+    init_micro           = 'aerosols',    ! initialize 'aerosols' at their equilibrium or 'droplets' using rm_drop_micro and sigma_drop_micro                                                                                           [IMPLIED]
+    droplets_init_micro  = 'random',      ! initialize particles using a 'random' generator, the bin model-like deterministic 'singleSIP' method, or the uniform sampling method 'USM'                                                  [PG 3251: "A random generator following each aerosol distribution individually is used to prescribe the aerosol mass for each computational particle"]
+
+    rm_drop_micro        = 0.0,       ! for init_micro = 'droplets', the geometric mean radius of the initial droplet distribution needs to be prescribed (m)                                                                       [NOT NEEDED]
+    sigma_drop_micro     = 0.0,          ! for init_micro = 'droplets', the geometric standard deviation of the initial droplet distribution needs to be prescribed (dimensionless)                                                    [NOT NEEDED]
+
+    n_particles = 1000,                    ! number of superdroplets                                                                                                                                                                     [PG3251: "100 (20) computational particles are assigned to each mode of the aforementioned background aerosol distribution"]
+    collection_kernel_micro   = 'hall',   ! 'hall' collection kernel with collision efficiencies by Hall (1980)
+                                          ! 'wang' turbulence enhanced collection kernel, using parameterizations
+                                          ! by Ayala et al. (2008) and Wang and Grabowski (2009), use
+                                          ! >> diss_rate_LEM << to prescribe dissipation rate
+
+    n_aero = 11700000.0, 38400000.0, 41700000.0, 0.0,       ! number mixing ratio of up to 4 aerosol modes (1/kg)                                                                                                                                       [PG3250: Background: "N_aero = (11.7, 38.4, 41.7) mg-1"]
+    rm_aero = 9E-09, 1.95E-08, 7.7E-08, 0.0,    ! geometric mean radius of aerosols (m)                                                                                                                                                     [PG3250: Background: "rm_aero = (9.0, 19.5, 77.0) nm"]
+    sigma_aero = 1.416, 1.425, 1.592, 0.0,      ! geometric standard deviation of aerosols (dimensionless)                                                                                                                                  [PG3250: Background: "sigma_aero = (1.416, 1.425, 1.592)"]
+    solubility_aero = 1.0, 1.0, 1.0, 1.0,       ! solubility of aerosols: 1.0 -> pure CCN (homogeneous freezing), 0.0 -> pure IN (deposition nucleation), anything else -> mixture (immersion freezing)                                     [UNSPECIFIED]
+    weight_aero = 1.0, 1.0, 1.0, 0.0,           ! weights for assigning superdroplets to each mode                                                                                                                                          [UNSPECIFIED]
+!
+!-- parameters for steering parcel dynamics
+    switch_parcel = .TRUE.,             ! turn on/off adiabatic parcel                                                                                                                                                                  [PG 3251: "a volume of air is cooled by adiabatic lifting"]
+
+    w_mean_parcel           = 0.3,      ! mean velocity of parcel (m/s)                                                                                                                                                                 [PG 3251: "typical updraft velocity of 0.3 ms-1"]
+    switch_wave_parcel      = .FALSE.,  ! use a wave-like motion (oscillations)                                                                                                                                                         [UNSPECIFIED]
+    time_half_wave_parcel   = 0.0,   ! half period of wave/oscillation (s)                                                                                                                                                           [UNSPECIFIED]
+
+!
+!-- parameters for steering entrainment (some parts might not work currently)                                                                                                                                                           [UNSPECIFIED - part of the LEM?]
+    switch_entrainment            = .FALSE.,     ! turn on/off entrainment
+    type_entrainment              = 'random',    ! 'random' or 'timed' using up to 10 time_entrainment values (see below)
+    LEM_entrainment               = 'random',    ! placement of entrainment event in LEM: 'random' or 'center'
+
+    fractional_rate_entrainment   = 0.0015,     ! fractional_rate_entrainment (1/m)
+    fraction_air_entrainment      = 0.2,        ! fraction of air replaced by entrainment (dimensionless)
+    rh_entrainment                = 0.75,       ! relative humidity of entrained air (dimensionless)
+    dT_entrainment                = 0.0,        ! temperature difference between entrained air and parcel (K)
+
+    time_entrainment              = 1000.0, 2000.0, 3000.0, 4000.0,        ! up to 10 deterministic entrainment times (s)
+!
+!-- parameters for steering the LEM
+    switch_LEM                  = .FALSE.,     ! LEM on/off
+    init_LEM                    = 'explicit', ! 'explicit' -> you need to define n_domain_LEM, dz_LEM, and dx_LEM, 'implicit' -> only n_domain_LEM is relevant, dz_LEM and dx_LEM are determined by the concentration of hydrometeors
+    n_domain_LEM                = 100,        ! number of LEM grid boxes
+    dz_LEM                      = 0.001,        ! vertical resolution of LEM (m), i.e., n_domain_LEM * dz_LEM yields the length of the domain
+    dx_LEM                      = 0.001,      ! horizontal resolution of the LEM (m). This quantity is only important to determine the volume of each LEM grid box dV = dz * dx^2
+
+    switch_mol_diff_LEM         = .TRUE.,     ! LEM molecular diffusion
+    switch_turbulence_LEM       = .TRUE.,     ! LEM turbulent compression and folding
+    switch_supersat_fluct_LEM   = .TRUE.,    ! LEM supersaturation fluctuations caused by turbulent compression and folding
+
+    switch_sedimentation_LEM    = .TRUE.,    ! motion of particles in LEM considers sedimentation
+    switch_stokes_LEM           = .FALSE.,    ! motion of particles in LEM considers inertia
+    switch_sgs_velocities_LEM   = .FALSE.,     ! motion of particles in LEM considers LEM-unresolved fluctuations
+
+    L_turb_LEM        = 100.0,   ! LEM outer scale of turbulence (m)
+    diss_rate_LEM     = 1.0E-4,  ! kinetic energy dissipation rate (m2/s3),
+                                 ! affects only LEM or the collection_kernel_micro='wang'
+!
+!-- Output of droplet size distributions
+    n_spec       = 10,       ! time step number of spectrum output
+    alpha_spec   = 0.125,    ! bin spacing: mass(n+1) = mass(n) * 2^alpha_spec
+    r_start_spec = 0.005E-6, ! smallest radius for spectra; 0.01E-6 to see haze, cloud droplets, and rain; 1.5625 to see cloud droplets and rain
+!
+!-- Output of time series
+    n_ts = 1,  ! time step interval for output
+!
+!-- Output of 1D LEM domain data
+    switch_output_1D_LEM = .FALSE.,   ! turn on/off LEM domain data
+    n_1D_LEM = 10,                   ! time step interval for output
+!
+!-- ensemble runs
+    n_ensemble = 1,                  ! ensemble number initializes random numbers
+    switch_batch_mode = .TRUE.,      ! the batch mode runs automatically, no interaction with user required
+    tot_ensemble = 6,              ! number of total ensemble member when parallel mode is uses
+/
