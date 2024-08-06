@@ -5,6 +5,7 @@ from PyLCM.parameters import *
 from PyLCM.micro_particle import *
 from scipy.optimize import newton
 
+
 # Diffusional growth of aerosols, droplets
 def drop_condensation(particles_list, T_parcel, q_parcel, P_parcel, nt, dt, air_mass_parcel, S_lst, rho_aero,kohler_activation_radius, con_ts, act_ts, evp_ts, dea_ts, switch_kappa_koehler):
     
@@ -42,6 +43,8 @@ def drop_condensation(particles_list, T_parcel, q_parcel, P_parcel, nt, dt, air_
         if switch_kappa_koehler:
             bfactor = particle.kappa
         else:
+            # afactor = 0 # CHANGE1
+            # bfactor = 0 # CHANGE2
             bfactor = vanthoff_aero * rho_aero * molecular_weight_water / (rho_liq * molecular_weight_aero) # Solute effect
         
         # Initial radius

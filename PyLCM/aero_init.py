@@ -90,7 +90,7 @@ def model_init(dt_widget, nt_widget, Condensation_widget, Collision_widget, n_pa
     na_ts,nc_ts,nr_ts = np.zeros(nt+1),np.zeros(nt+1),np.zeros(nt+1)
     con_ts, act_ts, evp_ts, dea_ts = np.zeros(nt+1),np.zeros(nt+1),np.zeros(nt+1),np.zeros(nt+1)
     acc_ts, aut_ts, precip_ts = np.zeros(nt+1),np.zeros(nt+1), np.zeros(nt+1)
-    spectra_arr[0],qa_ts[0], qc_ts[0],qr_ts[0], na_ts[0], nc_ts[0], nr_ts[0], particles_array[0], rc_liq_avg_array[0], rc_liq_std_array[0], TAU_ts_array[0] = ts_analysis(particles_list,air_mass_parcel,rm_spec, n_bins,n_particles, V_parcel, w_parcel, dt, nt)
+    spectra_arr[0],qa_ts[0], qc_ts[0],qr_ts[0], na_ts[0], nc_ts[0], nr_ts[0], particles_array[0], rc_liq_avg_array[0], rc_liq_std_array[0], TAU_ts_array[0] = ts_analysis(particles_list,air_mass_parcel,rm_spec, n_bins,n_particles, V_parcel, w_parcel, TAU_ts_array[0], dt, nt)
     
     # Initialization of arrays for T_parcel, RH_parcel, q_parcel and z_parcel. 
     # They will later be filled with values for each time step.

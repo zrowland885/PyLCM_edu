@@ -12,7 +12,7 @@ from PyLCM.condensation import *
 from PyLCM.collision import *
 from PyLCM.q_ext import q_ext
  
-def ts_analysis(particles_list,air_mass_parcel,log_edges, nbins, n_particles, V_parcel, w_parcel, dt, nt):
+def ts_analysis(particles_list,air_mass_parcel,log_edges, nbins, n_particles, V_parcel, w_parcel, TAU_ts, dt, nt):
     # Timesteps analysis: Performs calculations of q_x mixing ratios and n_x number densities and the spectra
     nbins = nbins - 1 # Number of bins are 1 smaller than number of edges.
     
@@ -25,8 +25,6 @@ def ts_analysis(particles_list,air_mass_parcel,log_edges, nbins, n_particles, V_
     NC = 0.0
     NR = 0.0
     NA = 0.0
-
-    TAU_ts = 0.0
 
     # Initialize empty lists which later will contain the radii of all particles at one timestep (particles_r),
     # the wheighting factors at one timestep respectively (particles_a) or the radii of only cloud droplets (particles_c).
@@ -66,7 +64,7 @@ def ts_analysis(particles_list,air_mass_parcel,log_edges, nbins, n_particles, V_
         # Apped the weighting factor of the current particle to the list
         particles_a[particle.id] = particle.A
 
-        TAU_ts = TAU_ts + q_ext(r_liq) * np.pi * r_liq**2 * particle.A / V_parcel * ( w_parcel * dt * nt ) # optical thickness
+        TAU_ts = TAU_ts + q_ext(r_liq) * np.pi * r_liq**2 * particle.A / V_parcel * ( w_parcel * dt) # optical thickness
         
     # Weighted mean and standard deviation of radius for cloud droplets only
     rc_liq_avg = np.nansum(np.array(particles_c) * np.array(particles_ac)) / np.sum(np.array(particles_ac))
@@ -92,15 +90,15 @@ def get_spec(nbins,spectra_arr,log_edges,r_liq,weight_factor,air_mass_parcel):
 
     return spectra_arr
 
-def save_model_output_variables(time_array, RH_parcel_array, q_parcel_array, T_parcel_array, z_parcel_array, qa_ts, qc_ts, qr_ts, na_ts, nc_ts, nr_ts, TAU_ts_array, albedo_array, filename='testoutput_model.csv'):
+def save_model_output_variables(time_array, RH_parcel_array, q_parcel_array, T_parcel_array, z_parcel_array, qa_ts, qc_ts, qr_ts, na_ts, nc_ts, nr_ts, rc_liq_avg_array, r_avg_array, TAU_ts_array, albedo_array, filename='testoutput_model.csv'):
     # Saves the output arrays to a csv file in the subfolder 'Output'
     # Optional filename can be given
     
-    output_variables_array = np.stack((time_array, RH_parcel_array, q_parcel_array*1000, T_parcel_array, z_parcel_array, qa_ts*1000, qc_ts*1000, qr_ts*1000, na_ts/1e6, nc_ts/1e6, nr_ts/1e6, TAU_ts_array, albedo_array), axis=-1)
+    output_variables_array = np.stack((time_array, RH_parcel_array, q_parcel_array*1000, T_parcel_array, z_parcel_array, qa_ts*1000, qc_ts*1000, qr_ts*1000, na_ts/1e6, nc_ts/1e6, nr_ts/1e6, rc_liq_avg_array, r_avg_array, TAU_ts_array, albedo_array), axis=-1)
     
     # Conversion to pandas format
     output_variables_dataframe = pd.DataFrame(output_variables_array)
-    output_variables_dataframe.columns=['time', 'RH_parcel', 'q_parcel', 'T_parcel', 'z_parcel', 'qa_ts', 'qc_ts', 'qr_ts', 'na_ts', 'nc_ts', 'nr_ts', 'TAU_ts', 'albedo']
+    output_variables_dataframe.columns=['time', 'RH_parcel', 'q_parcel', 'T_parcel', 'z_parcel', 'qa_ts', 'qc_ts', 'qr_ts', 'na_ts', 'nc_ts', 'nr_ts', 'rc_liq_avg_ts', 'r_avg_ts', 'TAU_ts', 'albedo']
     
     # Save to csv
     output_variables_dataframe.to_csv('Output/'+filename)
