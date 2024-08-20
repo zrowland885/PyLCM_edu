@@ -188,7 +188,7 @@ def determine_collision(dt, particle1, particle2, rho_parcel, rho_liq, p_env, T_
     #if particle1.micro_type > 0 and particle2.micro_type > 0:
     R_n = (particle1.M / particle1.A / (4.0 / 3.0 * pi * rho_liq)) ** 0.33333333333
     R_m = (particle2.M / particle2.A / (4.0 / 3.0 * pi * rho_liq)) ** 0.33333333333
-    
+
     v_r1 = ws_drops_beard(R_n, rho_parcel, rho_liq, p_env, T_parcel)
     v_r2 = ws_drops_beard(R_m, rho_parcel, rho_liq, p_env, T_parcel)
     
