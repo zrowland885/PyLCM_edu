@@ -5,6 +5,8 @@ from PyLCM.parameters import *
 from PyLCM.micro_particle import *
 from scipy.optimize import newton
 
+import math
+
 
 # Diffusional growth of aerosols, droplets
 def drop_condensation(particles_list, T_parcel, q_parcel, P_parcel, nt, dt, air_mass_parcel, S_lst, rho_aero,kohler_activation_radius, con_ts, act_ts, evp_ts, dea_ts, switch_kappa_koehler):
@@ -59,8 +61,17 @@ def drop_condensation(particles_list, T_parcel, q_parcel, P_parcel, nt, dt, air_
         # Diffusional growth
         r_liq_old = r_liq
         r_liq = radius_liquid_euler(r_liq, dt, r0, G_pre, supersat, f_vent, afactor, bfactor, r_N, D_pre, radiation)
+
+        # if math.isnan(particle.M):
+        #     print("BEFORE")
             
         particle.M = particle.A * 4.0 / 3.0 * np.pi * rho_liq * r_liq ** 3
+
+        # if math.isnan(particle.M):
+        #     print("AFTER")
+        #     print('particle.A',particle.A)
+        #     print('rho_liq',rho_liq)
+        #     print('r_liq',r_liq)
         
         if r_liq_old < r_liq:
             con_ts = con_ts +  (particle.M - M_old)
@@ -135,5 +146,10 @@ def radius_liquid_euler(r_ini, dt_int, r0, G_pre, supersat, ventilation_effect, 
 
         t_eul += dt_eul
         r_ini = r_eul
+
+    if math.isnan(r_eul):
+        print('R_EUL NAN')
+        print('f',f,'dfdr2',dfdr2,'r_aero',r_aero)
+        print('G_pre',G_pre,'ventilation_effect',ventilation_effect,'supersat',supersat,'afactor',afactor,'bfactor',bfactor,'r_aero',r_aero,'D_pre',D_pre,'radiation',radiation,'r0',r0)
     
     return r_eul
