@@ -37,6 +37,11 @@ def drop_condensation(particles_list, T_parcel, q_parcel, P_parcel, nt, dt, air_
     radiation = 0.0
         
     for particle in particles_list:
+
+        if particle.M == 0:
+            print("PARTICLE MASS IS ZERO, SKIPPING")
+            continue
+
         dq_liq = dq_liq - particle.M
         
         # Computation of factors a and b related to Koehler curve
@@ -45,8 +50,6 @@ def drop_condensation(particles_list, T_parcel, q_parcel, P_parcel, nt, dt, air_
         if switch_kappa_koehler:
             bfactor = particle.kappa
         else:
-            # afactor = 0 # CHANGE1
-            # bfactor = 0 # CHANGE2
             bfactor = vanthoff_aero * rho_aero * molecular_weight_water / (rho_liq * molecular_weight_aero) # Solute effect
         
         # Initial radius
@@ -58,20 +61,12 @@ def drop_condensation(particles_list, T_parcel, q_parcel, P_parcel, nt, dt, air_
             activation_radius = np.sqrt( 3.0 * bfactor * r_N**3 / afactor )
         else:
             activation_radius = activation_radius_ts
+
         # Diffusional growth
         r_liq_old = r_liq
         r_liq = radius_liquid_euler(r_liq, dt, r0, G_pre, supersat, f_vent, afactor, bfactor, r_N, D_pre, radiation)
 
-        # if math.isnan(particle.M):
-        #     print("BEFORE")
-            
         particle.M = particle.A * 4.0 / 3.0 * np.pi * rho_liq * r_liq ** 3
-
-        # if math.isnan(particle.M):
-        #     print("AFTER")
-        #     print('particle.A',particle.A)
-        #     print('rho_liq',rho_liq)
-        #     print('r_liq',r_liq)
         
         if r_liq_old < r_liq:
             con_ts = con_ts +  (particle.M - M_old)
@@ -123,6 +118,9 @@ def radius_liquid_euler(r_ini, dt_int, r0, G_pre, supersat, ventilation_effect, 
     r_eul_old = r_ini
     dt_eul = dt_int
     t_eul = 0.0
+
+    # r_eul_oldold = -9999
+
     while t_eul < dt_int - 1.0e-20:
 
         for m in range(500):
@@ -131,7 +129,8 @@ def radius_liquid_euler(r_ini, dt_int, r0, G_pre, supersat, ventilation_effect, 
 
             d2r2dtdr2 = G_pre * ventilation_effect * (afactor * r_eul**3 - bfactor * r_aero**3 * (3.0 * r_eul + 2.0 * r0) - r_eul**3 * (D_pre * radiation * r_eul * (r_eul + 2.0 * r0) - r0 * supersat)) / (r_eul**4 * (r_eul + r0)**2)
 
-            dt_eul = min(dt_int - t_eul, dt_int)  
+            dt_eul = min(dt_int - t_eul, dt_int)
+            # dt_eul = min( 0.5 * abs( 1.0 / d2r2dtdr2 ), dt_int - t_eul, dt_int )
 
             # To speed up the Newton-Raphson scheme, the square root is executed at every iteration
             f = r_eul**2 - r_ini**2 - dt_eul * dr2dt
@@ -147,9 +146,4 @@ def radius_liquid_euler(r_ini, dt_int, r0, G_pre, supersat, ventilation_effect, 
         t_eul += dt_eul
         r_ini = r_eul
 
-    if math.isnan(r_eul):
-        print('R_EUL NAN')
-        print('f',f,'dfdr2',dfdr2,'r_aero',r_aero)
-        print('G_pre',G_pre,'ventilation_effect',ventilation_effect,'supersat',supersat,'afactor',afactor,'bfactor',bfactor,'r_aero',r_aero,'D_pre',D_pre,'radiation',radiation,'r0',r0)
-    
     return r_eul
