@@ -44,24 +44,31 @@ def spec_plot(ax, spectra_arr, nt,dt, rm_spec, rc_liq_avg_array, time_array):
     ax.legend()
     
     
-def print_output(t,dt, z_parcel, T_parcel, q_parcel, rh, qc, qr, na, nc, nr):
+def print_output(t,dt, z_parcel, T_parcel, q_parcel, rh, qc, qr, na, nc, nr, particles_list):
     # Function which provides continuous text output during model runtime
     # Clear previous output
     clear_output(wait=True)
 
     # Print the initial variable names
-    print("value: {:<8}  {:<8} {:<8} {:<8} {:<8} {:<8} {:<8} {:<8} {:<8} {:<8}".format(
-        "Time (s)", "z (m)", "T (K)", "qv (g/kg)", "RH (%)", "QC (g/kg)", "QR (g/kg)", "NA (/mg)", "NC (/mg)", "NR (/mg)"))
+    print("value: {:<8} {:<8} {:<8} {:<8} {:<8} {:<8} {:<8} {:<8} {:<8} {:<8} {:<8}".format(
+        "Time (s)", "z (m)", "T (K)", "qv (g/kg)", "RH (%)", "QC (g/kg)", "QR (g/kg)", "NA (/mg)", "NC (/mg)", "NR (/mg)", "Comp. particles"))
 
     # Print the updated output
-    print("after: {:<8.1f}  {:<8.2f} {:<8.2f} {:<9.2f} {:<8.3f}  {:<8.3f}  {:<8.3f}  {:<8.2f}  {:<8.2f}  {:<8.2f}".format(
-        (t+1) * dt, z_parcel, T_parcel, 1e3 * q_parcel, 100* rh, qc,  qr, na , nc , nr))
+    print("after: {:<8.1f}  {:<8.2f} {:<8.2f} {:<9.2f} {:<8.3f}  {:<8.3f}  {:<8.3f}  {:<8.2f}  {:<8.2f}  {:<8.2f}  {:<8}".format(
+        (t+1) * dt, z_parcel, T_parcel, 1e3 * q_parcel, 100* rh, qc,  qr, na , nc , nr, len(particles_list)))
     
-def subplot_array_function(plot_mode, dt, nt, rm_spec, qa_ts, qc_ts, qr_ts, na_ts, nc_ts, nr_ts, T_parcel_array, RH_parcel_array, q_parcel_array, z_parcel_array, spectra_arr, increment_widget, con_ts, act_ts, evp_ts, dea_ts, acc_ts, aut_ts, rc_liq_avg_array,droplet_mode_widget):
+def subplot_array_function(plot_mode, dt, nt, max_z, z_parcel, w_parcel, rm_spec, qa_ts, qc_ts, qr_ts, na_ts, nc_ts, nr_ts, T_parcel_array, RH_parcel_array, q_parcel_array, z_parcel_array, spectra_arr, increment_widget, con_ts, act_ts, evp_ts, dea_ts, acc_ts, aut_ts, rc_liq_avg_array, droplet_mode_widget):
     # Core function of the post processing "plot" section which provides 6 subplots to all main model variables
     # Initialization of subplot layout
     fig, axs = plt.subplots(2, 4, sharex=False, sharey=False, figsize=(18,8))
     
+
+    # Limit the output by max z or max nt, whichever is smaller
+    time_to_top = (max_z - z_parcel) / w_parcel
+    nt_to_top = time_to_top / dt
+    if nt_to_top < nt:
+        nt = nt_to_top
+
     time_array = np.arange(nt+1)*dt
 
     # First row
@@ -151,7 +158,8 @@ def subplot_array_function(plot_mode, dt, nt, rm_spec, qa_ts, qc_ts, qr_ts, na_t
     line_increment = increment_widget.value
     nt_spec = nt / line_increment
     nt_spec = int(nt_spec)
-    cmap = cm.get_cmap('jet')
+    # cmap = cm.get_cmap('jet')
+    cmap = matplotlib.colormaps['jet']
     norm = plt.Normalize(0, nt_spec - 1)
         
     # Spectras in user given timesteps (defined via line_increment) will be displayed
@@ -178,7 +186,8 @@ def subplot_array_function(plot_mode, dt, nt, rm_spec, qa_ts, qc_ts, qr_ts, na_t
     # Select the plot axis
     plotaxis = axs[1,1]
     # Get the colormap
-    cmap_spectra = plt.cm.get_cmap('jet')
+    # cmap_spectra = plt.cm.get_cmap('jet')
+    cmap_spectra = matplotlib.colormaps['jet']
     # Normalize the colormap to the max. timestep, take into account the timestep interval dt (s)
     norm2 = plt.Normalize(vmin=0, vmax=np.max((nt_spec*line_increment-line_increment)*dt))
     # Produce mappable object

@@ -90,30 +90,30 @@ def get_spec(nbins,spectra_arr,log_edges,r_liq,weight_factor,air_mass_parcel):
 
     return spectra_arr
 
-def save_model_output_variables(time_array, RH_parcel_array, q_parcel_array, T_parcel_array, z_parcel_array, qa_ts, qc_ts, qr_ts, na_ts, nc_ts, nr_ts, rc_liq_avg_array, r_avg_array, TAU_ts_array, albedo_array, filename='testoutput_model.csv'):
+def save_model_output_variables(time_array, RH_parcel_array, q_parcel_array, T_parcel_array, z_parcel_array, qa_ts, qc_ts, qr_ts, na_ts, nc_ts, nr_ts, rc_liq_avg_array, TAU_ts_array, albedo_array, filename='testoutput_model.csv'):
     # Saves the output arrays to a csv file in the subfolder 'Output'
     # Optional filename can be given
     
-    output_variables_array = np.stack((time_array, RH_parcel_array, q_parcel_array*1000, T_parcel_array, z_parcel_array, qa_ts*1000, qc_ts*1000, qr_ts*1000, na_ts/1e6, nc_ts/1e6, nr_ts/1e6, rc_liq_avg_array, r_avg_array, TAU_ts_array, albedo_array), axis=-1)
+    output_variables_array = np.stack((time_array, RH_parcel_array, q_parcel_array*1000, T_parcel_array, z_parcel_array, qa_ts*1000, qc_ts*1000, qr_ts*1000, na_ts/1e6, nc_ts/1e6, nr_ts/1e6, rc_liq_avg_array, TAU_ts_array, albedo_array), axis=-1)
     
     # Conversion to pandas format
     output_variables_dataframe = pd.DataFrame(output_variables_array)
-    output_variables_dataframe.columns=['time', 'RH_parcel', 'q_parcel', 'T_parcel', 'z_parcel', 'qa_ts', 'qc_ts', 'qr_ts', 'na_ts', 'nc_ts', 'nr_ts', 'rc_liq_avg_ts', 'r_avg_ts', 'TAU_ts', 'albedo']
+    output_variables_dataframe.columns=['time', 'RH_parcel', 'q_parcel', 'T_parcel', 'z_parcel', 'qa_ts', 'qc_ts', 'qr_ts', 'na_ts', 'nc_ts', 'nr_ts', 'rc_liq_avg_ts', 'TAU_ts', 'albedo']
     
     # Save to csv
     output_variables_dataframe.to_csv('Output/'+filename)
     print('Output data written to: Output/'+filename)
     
-def save_model_output_dsd(spectra_arr, rm_spec, rl_spec, rr_spec, nt, filename='dsd_array_output.csv'):
+def save_model_output_dsd(spectra_arr, time_array, rm_spec, rl_spec, rr_spec, nt, filename='dsd_array_output.csv'):
     # Saves the output of the droplet size distributions to a csv-file. The filename can be adjusted manually.
     # The first 3 columns contain radii of the bin edges and bin mean
     # Remaining columns: each column representing the DSD of one timestep (timestep-number as defined in column heading)
     
     # Create list of timesteps for row names
-    timesteplist = list(range(nt+1))
+    # timesteplist = list(range(nt+1))
     firstnames = ['rm_spec [µm]', 'rl_spec [µm]', 'rr_spec [µm]']
     # Combine the lists => list of all row names
-    rowlist = firstnames + timesteplist
+    rowlist = firstnames + list(time_array)
     
     # Attatch the columns of rm, rl, rr to the spectra array
     dsd_array = np.column_stack((rm_spec*1e6, rl_spec*1e6, rr_spec*1e6, spectra_arr.T/1e6))
