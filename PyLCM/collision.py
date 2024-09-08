@@ -261,7 +261,8 @@ def E_H80(r1, r2):
     # Two-dimensional linear interpolation of the collision efficiency
     # Radius has to be in microns
     rq = min(r1 / r2, r2 / r1)
-    iq = int(rq * 20) 
+
+    iq = int(rq * 20)
     iq = max(iq, 1)
 
     if ir < 15:

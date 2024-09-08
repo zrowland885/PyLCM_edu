@@ -38,10 +38,6 @@ def drop_condensation(particles_list, T_parcel, q_parcel, P_parcel, nt, dt, air_
         
     for particle in particles_list:
 
-        if particle.M == 0:
-            print("PARTICLE MASS IS ZERO, SKIPPING")
-            continue
-
         dq_liq = dq_liq - particle.M
         
         # Computation of factors a and b related to Koehler curve
