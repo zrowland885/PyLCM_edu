@@ -127,7 +127,7 @@ def kohler_settings():
     # Adjust the style that descriptions are displayed in full length
     style = {'description_width': 'initial'}
     # Set if activation radius uses kohler critical radius
-    kohler_widget = widgets.Checkbox(description='Koehler critical radius', value=False, style=style, layout={'width': 'max-content'})
+    kohler_widget = widgets.Checkbox(description='Koehler critical radius', value=True, style=style, layout={'width': 'max-content'})
     
     display(r"Set activation radius using Koehler critical radius, otherwise activation radius is 1 µm",kohler_widget)
      
