@@ -29,7 +29,7 @@ def spec_plot(ax, spectra_arr, nt,dt, rm_spec, rc_liq_avg_array, time_array):
     cbar = plt.colorbar(contour, ax=ax, format="%.0e")
     
     # Add label to the colorbar
-    cbar.ax.set_title('dN/dlog(R) (mg$^{-1}$)', fontsize = 10, pad = 10)
+    cbar.ax.set_title('dN/dlog(R) (cm$^{-3}$)', fontsize = 10, pad = 10)
     
     # Add cloud, rain mean droplet size above DSD
     ax.plot(time_array, rc_liq_avg_array*1e6 , color='black', linewidth=2, label='Mean radius $\overline{r}$ (µm) \n (cloud & rain droplets)')
@@ -51,7 +51,7 @@ def print_output(t,dt, z_parcel, T_parcel, q_parcel, rh, qc, qr, na, nc, nr, par
 
     # Print the initial variable names
     print("value: {:<8} {:<8} {:<8} {:<8} {:<8} {:<8} {:<8} {:<8} {:<8} {:<8} {:<8}".format(
-        "Time (s)", "z (m)", "T (K)", "qv (g/kg)", "RH (%)", "QC (g/kg)", "QR (g/kg)", "NA (/mg)", "NC (/mg)", "NR (/mg)", "Comp. particles"))
+        "Time (s)", "z (m)", "T (K)", "qv (g/kg)", "RH (%)", "QC (g/kg)", "QR (g/kg)", "NA (/cm3)", "NC (/cm3)", "NR (/cm3)", "Comp. particles"))
 
     # Print the updated output
     print("after: {:<8.1f}  {:<8.2f} {:<8.2f} {:<9.2f} {:<8.3f}  {:<8.3f}  {:<8.3f}  {:<8.2f}  {:<8.2f}  {:<8.2f}  {:<8}".format(
@@ -136,7 +136,7 @@ def subplot_array_function(plot_mode, dt, nt, max_z, z_parcel, w_parcel, rm_spec
         axs[0,3].plot(time_array,nc_ts, label = "Cloud")
         axs[0,3].plot(time_array,nr_ts, label = "Rain")
         axs[0,3].set_xlabel("Time (s)")
-        axs[0,3].set_ylabel('Number Concentration of Particles $n_x$ (mg$^{-1}$)')
+        axs[0,3].set_ylabel('Number Concentration of Particles $n_x$ cm$^{-3}$)')
         axs[0,3].set_yscale('log')
         axs[0,3].legend()
         axs[0,3].grid()
@@ -145,7 +145,7 @@ def subplot_array_function(plot_mode, dt, nt, max_z, z_parcel, w_parcel, rm_spec
         axs[0,3].plot(nc_ts, z_parcel_array, label = "Cloud")
         axs[0,3].plot(nr_ts, z_parcel_array, label = "Rain")
         axs[0,3].set_ylabel("Height $z$ (m)")
-        axs[0,3].set_xlabel('Number Concentration of Particles $n_x$ (mg$^{-1}$)')
+        axs[0,3].set_xlabel('Number Concentration of Particles $n_x$ (cm$^{-3}$)')
         axs[0,3].set_xscale('log')
         axs[0,3].grid()
 
@@ -167,11 +167,12 @@ def subplot_array_function(plot_mode, dt, nt, max_z, z_parcel, w_parcel, rm_spec
         spectra_arr_nan = copy.deepcopy(spectra_arr) 
         # Here a deepcopy is needed so that values <= 0 are masked out only in the copy for the plot (and remain for the data output)
         spectra_arr_nan[np.where(spectra_arr_nan<=0)] = np.nan
-        axs[1,1].plot(rm_spec*1e6, spectra_arr_nan[i*line_increment]/1e6, color=cmap(norm(i)))
+        spectra_arr_nan = spectra_arr_nan * rm_spec * 1e-6 # Get correct units of concentration per size
+        axs[1,1].plot(rm_spec*1e6, spectra_arr_nan[i*line_increment], color=cmap(norm(i)))
         axs[1,1].set_yscale("log")
         axs[1,1].set_xscale("log")
         axs[1,1].set_xlabel('Radius (µm)')
-        axs[1,1].set_ylabel('DSD dN/dlog(R) (mg$^{-1}$)')
+        axs[1,1].set_ylabel('DSD dN/dlog(R) (cm$^{-3}$)')
         
         if droplet_mode_widget == "Aerosol mode":
             axs[1,1].set_xlim(0.01,1.0) 
